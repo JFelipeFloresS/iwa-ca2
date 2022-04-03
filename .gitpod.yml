@@ -1,0 +1,10 @@
+image:
+  file: .gitpod.Dockerfile
+tasks:
+  - name: Running MongoDB
+    command: mkdir -p data && mongod --dbpath data
+  - name: Npm initialisation
+    init: |
+      npm install
+      npm install nodemon mongoose
+    command: npm run start
