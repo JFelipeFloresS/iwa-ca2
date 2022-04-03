@@ -1,4 +1,4 @@
-const album = require('./models/album');
+const Album = require('./models/album');
 
 exports.addAlbum = function(req, res) {
     let newAlbum = new Album(req.body);
@@ -9,7 +9,12 @@ exports.addAlbum = function(req, res) {
 };
 
 exports.getAlbums = function(req, res) {
-
+    Album.find({}, function(err, albums) {
+        if (err) {
+            res.status(400).json(err);
+        }
+        res.json(albums);
+    });
 };
 
 exports.getAlbums = function(req, res) {
