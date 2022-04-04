@@ -7,13 +7,24 @@ exports.test = function(req, res) {
 }
 
 exports.addAlbum = function(req, res) {
+    let albums = req.body.json;
+    Album.insertMany(albums)
+    .then(function(){ 
+        console.log("Data inserted")  // Success 
+    }).catch(function(error){ 
+        console.log(error)      // Failure 
+    });
+};
+
+/*
+exports.addAlbum = function(req, res) {
     let newAlbum = new Album(req.body);
     newAlbum.save(function (err, album) {
         if (err) res.status(400).json(err);
         res.json(album);
     });
 };
-
+*/
 exports.getAlbums = function(req, res) {
     Album.find({}, function(err, albums) {
         if (err) {
