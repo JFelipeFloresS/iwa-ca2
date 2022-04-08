@@ -6,17 +6,18 @@ exports.test = function(req, res) {
     });
 }
 
-exports.addAlbum = function(req, res) {
+exports.updateMultipleAlbums = function(req, res) {
     let albums = req.body.json;
-    Album.insertMany(albums)
-    .then(function(){ 
-        console.log("Data inserted")  // Success 
-    }).catch(function(error){ 
-        console.log(error)      // Failure 
+    albums.forEach((album) => {
+        Album.findOneAndUpdate({number: album.number}, req.body, {new: true},function (err, album) {
+            if (err) {
+              res.status(400).json(err);
+            } 
+          }); 
     });
+    res.json(albums);
 };
 
-/*
 exports.addAlbum = function(req, res) {
     let newAlbum = new Album(req.body);
     newAlbum.save(function (err, album) {
@@ -24,7 +25,7 @@ exports.addAlbum = function(req, res) {
         res.json(album);
     });
 };
-*/
+
 exports.getAlbums = function(req, res) {
     Album.find({}, function(err, albums) {
         if (err) {
