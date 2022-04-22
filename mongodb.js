@@ -1,30 +1,24 @@
+const res = require('express/lib/response');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const album = require('./models/album');
 const client = new MongoClient(process.env.dbURI, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
- function findAll() {
-    let albums = [];
-    console.log("Here");
-    var connection = client.connect(err => {
+var results = [];
+
+exports.findAll = function () {
+
+    var connect = client.connect(err => {
         if (err) throw err;
         const collection = client.db("best-albums").collection("albums");
-        
 
-        collection.find({}).toArray(function (err, result) {
+        collection.find({}).toArray(function (err, res) {
             if (err) throw err;
-            console.log(result);
-            albums.push(result);
+            //console.log(res);
+            results.push(res);
         });
 
-        console.log("Count: " + albums.length);
-        if (albums.length != 0) {
-            for (let i = 0; i < albums.length; i++) {
-                console.log(albums[i]);
-            }
-        }
     });
-
-    connection;
-
-    return albums;
-};
+    connect;
+    console.log(results);
+    return results;
+}
