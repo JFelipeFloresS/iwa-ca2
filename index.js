@@ -2,10 +2,13 @@ const http = require("http"),
     logger = require("morgan"),
     express = require("express"),
     bodyParser = require("body-parser"),
-    mongoose = require("mongoose");
+    mongoose = require("mongoose"),
+    dotenv = require("dotenv");
 
 let app = express();
 let port = 8000;
+
+dotenv.config();
 
 app.use(bodyParser.json());
 app.use(require('./routes'));
