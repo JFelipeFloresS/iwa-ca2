@@ -1,7 +1,7 @@
 const Album = require('./models/album');
 
 exports.test1 = function(req, res) {
-    let albums = require('./mongodb').findAll;
+    let albums = findAll();
     res.json({
         size: albums.length,
         body: albums

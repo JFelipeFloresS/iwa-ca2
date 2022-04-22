@@ -2,7 +2,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const album = require('./models/album');
 const client = new MongoClient(process.env.dbURI, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-exports.findAll = () => {
+ function findAll() {
     let albums = [];
     console.log("Here");
     var connection = client.connect(err => {
