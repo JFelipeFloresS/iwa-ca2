@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.use(require('./routes'));
 app.use(logger("tiny"));
 
-mongoose.connect(process.env.bdURI);
+mongoose.connect(process.env.dbURI);
 
 mongoose.connection.on('error', (err) => {
     console.log('Mongodb error ', err, '.');
