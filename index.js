@@ -1,16 +1,20 @@
-const http = require("http"),
-    logger = require("morgan"),
-    express = require("express"),
+const express = require("express"),
     bodyParser = require("body-parser"),
+    http = require("http"),
+    path = require("path"),
+    logger = require("morgan"),
     mongoose = require("mongoose"),
     dotenv = require("dotenv");
 
-let app = express();
-let port = process.env.PORT || 8000;
+let app = express(),
+    port = process.env.PORT || 8000,
+    server = http.createServer(app);
 
 dotenv.config();
 
+app.use(express.static(path.resolve(__dirname, "views")));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(require('./routes'));
 app.use(logger("tiny"));
 
@@ -24,6 +28,15 @@ mongoose.connection.on('connected', () => {
     console.log('MongoDB successfully connected.');
 });
 
-app.listen(port, function(err) {
-    console.log("Listening on port: " + port);
+app.get('/', function(req, res) {
+    res.sendFile(path.join(__dirname, 'views/index.html'));
 });
+
+server.listen(
+    process.env.PORT || 3000,
+    process.env.IP || "0.0.0.0",
+    function () {
+        const addr = server.address();
+        console.log("Server listening at", addr.address + ":" + addr.port);
+    }
+);
