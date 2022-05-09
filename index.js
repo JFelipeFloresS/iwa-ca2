@@ -29,7 +29,7 @@ mongoose.connection.on('connected', () => {
 });
 
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname, 'views/index.html'));
+    res.sendFile(path.join(__dirname, './albums/public/index.html'));
 });
 
 server.listen(
