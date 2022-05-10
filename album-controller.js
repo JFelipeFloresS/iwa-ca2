@@ -1,16 +1,8 @@
 const Album = require('./models/album'),
     mongodb = require('./mongodb.js');
 
-exports.test1 = function(req, res) {
-    mongodb.findAll;
-    let albums = mongodb.findAll();
-    res.json({
-        //size: albums.length,
-        body: albums
-    });
-}
 
-exports.test = function(req, res) {
+exports.help = function(req, res) {
     res.json({
         message: "Welcome to the top 500 albums of all time. Try adding '/albums' at the end of the link to get the full list!"
     });
