@@ -9,4 +9,6 @@ tasks:
       npm install nodemon mongoose
     command: npm run start
   - name: Run ReactApp
-    command: cd ./albums && npm start
+    init: |
+      cd albums
+    command:  npm start
