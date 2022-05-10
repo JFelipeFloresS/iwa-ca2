@@ -12,7 +12,7 @@ exports.test1 = function(req, res) {
 
 exports.test = function(req, res) {
     res.json({
-        message: "Welcome to the top 500 albums of all time. Try adding '/album' at the end of the link to get the full list!"
+        message: "Welcome to the top 500 albums of all time. Try adding '/albums' at the end of the link to get the full list!"
     });
 }
 
@@ -37,11 +37,13 @@ exports.addAlbum = function(req, res) {
 };
 
 exports.getAlbums = function(req, res) {
+    console.log(req.body);
+    console.log('GET /albums')
     Album.find({}, function(err, albums) {
         if (err) {
             res.status(400).json(err);
         }
-        res.json(albums);
+        res.status(200).json(albums);
     });
 };
 

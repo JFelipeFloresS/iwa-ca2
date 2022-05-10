@@ -12,7 +12,6 @@ let app = express(),
 
 dotenv.config();
 
-app.use(express.static(path.resolve(__dirname, "views")));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(require('./routes'));
@@ -28,12 +27,14 @@ mongoose.connection.on('connected', () => {
     console.log('MongoDB successfully connected.');
 });
 
+/*
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, './albums/public/index.html'));
 });
+*/
 
 server.listen(
-    process.env.PORT || 3000,
+    process.env.PORT || 8000,
     process.env.IP || "0.0.0.0",
     function () {
         const addr = server.address();

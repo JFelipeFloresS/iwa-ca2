@@ -4,7 +4,9 @@ import { StrictMode } from 'react';
 import './index.css';
 import App from  './App';
 
-const rootElement = document.getElementById('results');
+console.log('here');
+
+const rootElement = document.getElementById('albumsTable');
 const root = createRoot(rootElement);
 root.render(
   <StrictMode>
