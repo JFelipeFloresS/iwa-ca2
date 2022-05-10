@@ -11,4 +11,5 @@ tasks:
   - name: Run ReactApp
     init: |
       cd albums
+      npm install
     command:  npm start
