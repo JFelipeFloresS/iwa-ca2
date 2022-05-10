@@ -4,7 +4,8 @@ const express = require("express"),
     path = require("path"),
     logger = require("morgan"),
     mongoose = require("mongoose"),
-    dotenv = require("dotenv");
+    dotenv = require("dotenv"),
+    cors = require('cors');
 
 let app = express(),
     port = process.env.PORT || 8000,
@@ -12,6 +13,7 @@ let app = express(),
 
 dotenv.config();
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(require('./routes'));

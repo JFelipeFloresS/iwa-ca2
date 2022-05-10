@@ -28,8 +28,15 @@ body {
 }
 
 .table-container {
-    overflow-y: auto;
+    overflow-y: scroll;
     max-height: 60vh !important;
+}
+
+#album-list-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: snow;
 }
 
 table {
