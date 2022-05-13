@@ -1,7 +1,8 @@
 import './App.css';
 import React from 'react';
 import fetch from 'isomorphic-fetch';
-import album from './models/album';
+import mongoose from 'mongoose';
+import Popup from 'reactjs-popup';
 
 export class App extends React.Component {
 
@@ -9,16 +10,23 @@ export class App extends React.Component {
     super(props);
     this.state = {
       albums: [],
+      dragItem: null,
       isLoaded: false,
-      apiUri: 'https://8000-jfelipefloress-iwaca2-yr08gqwm006.ws-eu44.gitpod.io/albums'
+      apiUri: 'https://8000-jfelipefloress-iwaca2-gllkcucnmzs.ws-eu45.gitpod.io/albums'
     };
 
   }
 
+  /**
+   * Fetch albums from DB when component is mounted
+   */
   componentDidMount() {
     this.fetchFromApi();
   }
 
+  /**
+   * Fetch albums from API
+   */
   fetchFromApi() {
     fetch(this.state.apiUri)
       .then((res) => {
@@ -36,36 +44,93 @@ export class App extends React.Component {
       });
   }
 
-  addAlbum(e) {
+  setAlbums(newAlbums) {
+    this.setState({
+      albums: newAlbums
+    });
+  }
+
+  setDragItem(item) {
+    this.setState({
+      dragItem: item,
+    });
+  }
+
+  /**
+   * Add album to DB and react list
+   * @param {ClickEvent} e mouse click
+   */
+   addAlbum(e) {
     
     e.preventDefault();
-    const {albums } = this.state;
+
+    /*if (!isValidFormInputs(e)) {
+      console.log('Invalid input');
+      return;
+    }*/
+
     const newAlbum = {
-      number: parseInt(this.number.value) + 1,
+      _id: new mongoose.Types.ObjectId(),
+      number: parseInt(this.number.value),
       artist: this.artist.value,
       title: this.title.value,
-      year: this.year.value
+      year: parseInt(this.year.value)
     };
 
     this.setState({
       albums: [...this.state.albums, newAlbum]
     })
 
-    var albumMongoose = new album({
-      number: newAlbum.number,
-      year: newAlbum.year,
-      title: newAlbum.title,
-      artist: newAlbum.artist
-    })
-
+    var albumMongoose =JSON.stringify(newAlbum);
+    
     fetch(this.state.apiUri, {
-      method: 'post',
+      method: 'POST',
+      headers: {"Content-type": "application/json; charset=UTF-8"},
       body: albumMongoose
-    }).then((res) => {
-      console.log(res);
-    });
+    })
+    .then(response => response.json())
+    .then(json => console.log(json))
+    .catch(error => console.log("Error: ", error));
+
+    e.target.reset();
   }
 
+  /**
+   * Delete album from DB and react list
+   * @param {clickEvent} e mouse click
+   */
+  deleteAlbum(e) {
+    e.preventDefault();
+    const splitString = e.target.value.split(',');
+    const pos = splitString[0];
+    const id = splitString[1];
+    console.log(pos);
+    console.log(id);
+    fetch(this.state.apiUri + '/' + id,{
+      method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(json => console.log(json))
+    .catch(err => console.log("Error: ", err));
+
+    let updatedAlbums = this.state.albums;
+    updatedAlbums.splice(pos, 1);
+    this.setState({
+      albums: updatedAlbums
+    })
+
+  }
+
+  updateAlbum(e) {
+    const id = e.target.value;
+    console.log(id);
+    
+  }
+
+  /**
+   * Render class App
+   * @returns list of albums
+   */
   render() {
     return (
       <div className="row">
@@ -83,7 +148,7 @@ export class App extends React.Component {
               </thead>
 
               <tbody id='albums-body'>
-                {AlbumRows(this.state['albums'])}
+                {AlbumRows(this, this.state['albums'])}
               </tbody>
             </table>
           </div>
@@ -94,7 +159,8 @@ export class App extends React.Component {
             method="dialog" className="form-inline">
             <h4>Add new album:</h4>
             <label htmlFor="position">Position:</label>
-            <input type="number" name="position" min="1" max="500" defaultValue="1" className="form-control" ref={(value) => {this.number = value;}}/>
+            {/*<input type="number" name="position" min="1" max="500" defaultValue="1" className="form-control" ref={(value) => {this.number = value;}}/>*/}
+            <input type="number" name="position" defaultValue="501" className="form-control" ref={(value) => {this.number = value;}}/>
 
             <label htmlFor="title">Title:</label>
             <input type="text" name="title" placeholder="title" className="form-control" required ref={(value) => {this.title = value;}}/>
@@ -119,52 +185,43 @@ export class App extends React.Component {
 
 };
 
-function AlbumRows(albums) {
+/**
+ * Draw trs of albums
+ * @param {JSON} albums JSON list of albums
+ * @returns table rows of albums
+ */
+function AlbumRows(app, albums) {
 
   if (Object.keys(albums).length === 0) return;
+
+  albums = albums.sort((a, b) => a.number - b.number);
 
   var tds = [];
 
   for (let i = 0; i < albums.length; i++) {
     const albumData = albums[i];
     tds.push(
-      <tr className="album-row" id="album-row" draggable="true" key={albumData.number}>
+      <tr className="album-row" id="album-row" draggable="true" key={albumData._id}  onChange={(e) => app.updateAlbum(e)}>
         <td className='number' id='number'>{albumData.number}</td>
         <td className='title'>{albumData.title}</td>
         <td className='year'>{albumData.year}</td>
         <td className='artist'>{albumData.artist}</td>
-        <td><button className='btn btn-danger' id="delete-button">delete</button></td>
+        <td><button className='btn btn-danger' id="delete-button" value={[i, albumData._id]} onClick={(e)=> app.deleteAlbum(e)}>delete</button></td>
+        {EditPopUp(i, albumData, app)}
       </tr>
     );
   }
   return tds;
 }
 
-function AppendElement() {
-  var inputs = null;
-  if (!isValidFormInputs(inputs)) {
-    return
-  }
-
-  var newAlbum = new album({
-    number: inputs.item(0).value,
-    year: inputs.item(2).value,
-    title: inputs.item(1).value,
-    artist: inputs.item(3).value
-  });
-
-  var albumRow = albumRow(newAlbum);
-  React.AddAlbumToList(newAlbum);
-
-  /**
-  var allAlbums = TableBody.albums;
-  // Places the item in the first position available if greater than the current amount of albums.
-  if (inputs.item(0).value > allAlbums.length + 1) {
-          inputs.item(0).value = allAlbums.length + 1;
-  }*/
-
-  //var albumListBody = document.getElementById('albums-body');
-  //albumListBody.appendChild(newAlbumRow);
+function EditPopUp(i, albumData, app) {
+  return (
+    <Popup position="left center" trigger={<td><button className='btn btn-warning' id="delete-button" value={[i, albumData._id, albumData.number, albumData.title, albumData.year, albumData.artist]} onClick={(e)=> app.updateAlbum(e)}>edit</button></td>}>
+      <div style={{"backgroundColor": "(255, 255, 255)", "padding": "10%", "width": "100vh"}}>
+        <h1>FUNCIONOU</h1>
+      </div>
+    </Popup>
+  );
 }
 
 /**
@@ -212,3 +269,4 @@ function isValidFormInputs(inputs) {
     return false;
   }
 }
+

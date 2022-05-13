@@ -1,5 +1,6 @@
 const Album = require('./models/album'),
-    mongodb = require('./mongodb.js');
+    mongodb = require('./mongodb.js'),
+    mongoose = require('mongoose');
 
 
 exports.help = function(req, res) {
@@ -21,7 +22,11 @@ exports.updateMultipleAlbums = function(req, res) {
 };
 
 exports.addAlbum = function(req, res) {
+    console.log('POST /albums');
+    console.log(req.body);
     let newAlbum = new Album(req.body);
+    console.log(newAlbum);
+
     newAlbum.save(function (err, album) {
         if (err) res.status(400).json(err);
         res.json(album);
@@ -50,7 +55,9 @@ exports.getAlbum = function(req, res) {
 };
 
 exports.updateAlbum = function(req, res) {
-    Album.findOneAndUpdate({number: req.params.number}, req.body, {new: true},function (err, album) {
+    console.log('UPDATE /albums/' + req.params.id);
+    console.log(req.body);
+    Album.findOneAndUpdate({id: new mongoose.Types.ObjectId(req.params.id)}, req.body, {new: true},function (err, album) {
       if (err) {
         res.status(400).json(err);
       } 
@@ -59,7 +66,8 @@ exports.updateAlbum = function(req, res) {
 }
 
 exports.deleteAlbum = function(req, res) {
-    Album.findOneAndRemove({number: req.params.number}, function (err, album) {
+    console.log('DELETE /albums/' + req.params.id)
+    Album.findOneAndRemove({_id: new mongoose.Types.ObjectId(req.params.id)}, function (err, album) {
         if (err) {
           res.status(400).json(err);
         } 
