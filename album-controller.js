@@ -1,5 +1,4 @@
 const Album = require('./models/album'),
-    mongodb = require('./mongodb.js'),
     mongoose = require('mongoose');
 
 
