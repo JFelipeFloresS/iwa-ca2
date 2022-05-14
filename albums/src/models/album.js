@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const albumSchema = new mongoose.Schema({
-    number: { type: Number },
+    number: { type: Number , unique: false},
     year: Number,
     title: String,
     artist: String

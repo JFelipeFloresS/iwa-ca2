@@ -45,13 +45,10 @@ export class App extends React.Component {
     }
 
     sortedAlbums.push(album);
-    
+
     this.setState({
       albums: sortedAlbums
     })
-
-    console.log('sorted', sortedAlbums);
-    console.log('updatedstate', this.state.albums);
 
     var albums = {};
 
@@ -145,7 +142,7 @@ export class App extends React.Component {
 
     this.addAlbumToState(newAlbum);
 
-    
+
 
     e.target.reset();
   }
@@ -159,8 +156,14 @@ export class App extends React.Component {
     const splitString = e.target.value.split(',');
     const pos = splitString[0];
     const id = splitString[1];
-    console.log(pos);
-    console.log(id);
+
+    this.deleteFromDBAndList(id, pos);
+
+  }
+
+  deleteFromDBAndList(id, pos) {
+
+
     fetch(this.state.apiUri + '/' + id, {
       method: 'DELETE'
     })
@@ -168,12 +171,56 @@ export class App extends React.Component {
       .then(json => console.log(json))
       .catch(err => console.log("Error: ", err));
 
-    let updatedAlbums = this.state.albums;
-    updatedAlbums.splice(pos, 1);
+    var sortedAlbums = [...this.state.albums];
+    var index = -1;
+    for (let i = 0; i < sortedAlbums.length; i++) {
+      const newStateAlbum = sortedAlbums[i];
+      if (newStateAlbum._id === id) {
+        index = i;
+      }
+    }
+    if (index !== -1) sortedAlbums.splice(index, 1);
+
+    let currPos = parseInt(pos) + 1;
+
+    sortedAlbums.sort((a, b) => a.number - b.number);
+
+    for (let i = 0; i < sortedAlbums.length; i++) {
+      const currAlbum = sortedAlbums[i];
+      if (currPos > parseInt(pos) && currPos < parseInt(currAlbum.number)) {
+        currAlbum.number = currPos;
+        currPos++;
+      };
+    }
+
     this.setState({
-      albums: updatedAlbums
+      albums: sortedAlbums
     })
 
+    var albums = {};
+
+    for (let i = 0; i < this.state.albums.length; i++) {
+      const json = this.state.albums[i];
+      albums[json._id] = {
+        number: json.number,
+        year: json.year,
+        title: json.title,
+        artist: json.artist
+      };
+    }
+
+    var albumsJSON = JSON.stringify(albums);
+
+    fetch(this.state.apiUri, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: albumsJSON
+    })
+      .then(response => response.json())
+      .then(json => console.log(json))
+      .catch(error => console.log("Error: ", error));
   }
 
   EditPopUp(i) {
@@ -214,31 +261,17 @@ export class App extends React.Component {
     console.log(e.target);
     const elements = e.target.elements;
 
+    const id = new mongoose.Types.ObjectId();
     const albumJSON = {
-      _id: elements.inputAlbumId.value,
+      _id: id,
       number: parseInt(elements.position.value),
       artist: elements.artist.value,
       title: elements.title.value,
       year: parseInt(elements.year.value)
     };
 
-    fetch(this.state.apiUri + '/' + elements.inputAlbumId.value, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(albumJSON)
-    })
-      .then(res => res.json())
-      .then(json => console.log(json))
-      .catch(err => console.log(err));
-
-    this.fetchFromApi();
-
-    this.setState({
-      albums: [...this.state.albums]
-    });
-    this.forceUpdate();
+    this.deleteFromDBAndList(elements.inputAlbumId.value, elements.i.value);
+    this.addAlbumToState(albumJSON);
   }
 
   /**
@@ -285,8 +318,7 @@ export class App extends React.Component {
               method="dialog" className="form-inline">
               <h4>Add new album:</h4>
               <label htmlFor="position">Position:</label>
-              {/*<input type="number" name="position" min="1" max="500" defaultValue="1" className="form-control" ref={(value) => {this.number = value;}}/>*/}
-              <input type="number" name="position" defaultValue="501" className="form-control" ref={(value) => { this.number = value; }} />
+              <input type="number" name="position" min="1" defaultValue="1" className="form-control" ref={(value) => { this.number = value; }} />
 
               <label htmlFor="title">Title:</label>
               <input type="text" name="title" placeholder="title" className="form-control" required ref={(value) => { this.title = value; }} />
