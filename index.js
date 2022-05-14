@@ -8,14 +8,13 @@ const express = require("express"),
     cors = require('cors');
 
 let app = express(),
-    port = process.env.PORT || 8000,
     server = http.createServer(app);
 
 dotenv.config();
 
 app.use(cors());
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(require('./routes'));
 app.use(logger("tiny"));
 

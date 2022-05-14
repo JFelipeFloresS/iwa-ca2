@@ -27,16 +27,59 @@ export class App extends React.Component {
   }
 
   addAlbumToState(album) {
-    if (this.state.albums.length < album.number) album.number = this.state.albums.length;
-    const position = album.number;
+    if (this.state.albums.length < album.number) album['number'] = this.state.albums.length;
 
-    let sortedAlbums = this.state.albums;
-    sortedAlbums.push(album);
+    const position = album.number;
+    var sortedAlbums = this.state.albums;
+
+    let currPos = position;
+
     sortedAlbums.sort((a, b) => a.number - b.number);
 
+    for (let i = 0; i < sortedAlbums.length; i++) {
+      const currAlbum = sortedAlbums[i];
+      if (currPos === currAlbum.number) {
+        currAlbum.number++;
+        currPos++;
+      };
+    }
+
+    sortedAlbums.push(album);
+    
     this.setState({
-      albums: [...this.state.albums, album]
+      albums: sortedAlbums
     })
+
+    console.log('sorted', sortedAlbums);
+    console.log('updatedstate', this.state.albums);
+
+    var albums = {};
+
+    for (let i = 0; i < this.state.albums.length; i++) {
+      const json = this.state.albums[i];
+      albums[json._id] = {
+        number: json.number,
+        year: json.year,
+        title: json.title,
+        artist: json.artist
+      };
+    }
+
+    var albumsJSON = JSON.stringify(albums);
+    console.log(albumsJSON);
+
+    // update albums
+    fetch(this.state.apiUri, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: albumsJSON
+    })
+      .then(response => response.json())
+      .then(json => console.log(json))
+      .catch(error => console.log("Error: ", error));
+
   }
 
   updateSelectedDecade(e) {
@@ -91,8 +134,9 @@ export class App extends React.Component {
       return;
     }*/
 
-    const newAlbum = {
-      _id: new mongoose.Types.ObjectId(),
+    const id = new mongoose.Types.ObjectId();
+    let newAlbum = {
+      _id: id,
       number: parseInt(this.number.value),
       artist: this.artist.value,
       title: this.title.value,
@@ -100,18 +144,8 @@ export class App extends React.Component {
     };
 
     this.addAlbumToState(newAlbum);
+
     
-
-    var albumJSON = JSON.stringify(newAlbum);
-
-    fetch(this.state.apiUri, {
-      method: 'POST',
-      headers: { "Content-type": "application/json; charset=UTF-8" },
-      body: albumJSON
-    })
-      .then(response => response.json())
-      .then(json => console.log(json))
-      .catch(error => console.log("Error: ", error));
 
     e.target.reset();
   }
@@ -217,7 +251,7 @@ export class App extends React.Component {
         <div className='select-div'>
           <label htmlFor="select-year">Show year:</label>
           <select className="select-year form-select"
-            name='select-year' style={{'minWidth': '100%'}} onChange={e => this.updateSelectedDecade(e)}>
+            name='select-year' style={{ 'minWidth': '100%' }} onChange={e => this.updateSelectedDecade(e)}>
             {this.state.decades.map(decade => {
               return <option key={decade} value={decade}>{decade}</option>;
             })}
@@ -295,7 +329,7 @@ function AlbumRows(app, albums, currentDecade) {
 
   for (let i = 0; i < albums.length; i++) {
     const albumData = albums[i];
-    if (currentDecade != 'All time' && getDecade(albumData.year) != currentDecade) continue;
+    if (currentDecade !== 'All time' && getDecade(albumData.year) !== currentDecade) continue;
     albumsShown++;
     tds.push(
       <tr className="album-row" id="album-row" draggable="true" key={albumData._id}  >
