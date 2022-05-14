@@ -10,6 +10,7 @@ export class App extends React.Component {
     super(props);
     this.state = {
       albums: [],
+      decades: [],
       dragItem: null,
       isLoaded: false,
       apiUri: 'https://8000-jfelipefloress-iwaca2-gllkcucnmzs.ws-eu45.gitpod.io/albums'
@@ -24,6 +25,18 @@ export class App extends React.Component {
     this.fetchFromApi();
   }
 
+  updateDecades() {
+    // TODO fix this hot mess
+    for (let i = 0; i < this.state.albums.length; i++) {
+      const decade = this.state.albums[i].year.toString().substring(2, 3) + '0s';
+      console.log(decade);
+      if (this.state.decades.includes(decade)) return;
+      this.setState({
+        decades: [...this.state.decades, decade]
+      })
+    }
+  }
+
   /**
    * Fetch albums from API
    */
@@ -34,7 +47,7 @@ export class App extends React.Component {
       })
       .then((albumsRes) => {
         let jsonRes = JSON.parse(albumsRes);
-        //.sort((a, b) => a.position - b.position)
+        
         if (Object.keys(jsonRes.length) === 0) return;
 
         this.setState({
@@ -60,8 +73,8 @@ export class App extends React.Component {
    * Add album to DB and react list
    * @param {ClickEvent} e mouse click
    */
-   addAlbum(e) {
-    
+  addAlbum(e) {
+
     e.preventDefault();
 
     /*if (!isValidFormInputs(e)) {
@@ -81,16 +94,16 @@ export class App extends React.Component {
       albums: [...this.state.albums, newAlbum]
     })
 
-    var albumMongoose =JSON.stringify(newAlbum);
-    
+    var albumJSON = JSON.stringify(newAlbum);
+
     fetch(this.state.apiUri, {
       method: 'POST',
-      headers: {"Content-type": "application/json; charset=UTF-8"},
-      body: albumMongoose
+      headers: { "Content-type": "application/json; charset=UTF-8" },
+      body: albumJSON
     })
-    .then(response => response.json())
-    .then(json => console.log(json))
-    .catch(error => console.log("Error: ", error));
+      .then(response => response.json())
+      .then(json => console.log(json))
+      .catch(error => console.log("Error: ", error));
 
     e.target.reset();
   }
@@ -106,12 +119,12 @@ export class App extends React.Component {
     const id = splitString[1];
     console.log(pos);
     console.log(id);
-    fetch(this.state.apiUri + '/' + id,{
+    fetch(this.state.apiUri + '/' + id, {
       method: 'DELETE'
     })
-    .then(res => res.json())
-    .then(json => console.log(json))
-    .catch(err => console.log("Error: ", err));
+      .then(res => res.json())
+      .then(json => console.log(json))
+      .catch(err => console.log("Error: ", err));
 
     let updatedAlbums = this.state.albums;
     updatedAlbums.splice(pos, 1);
@@ -121,10 +134,69 @@ export class App extends React.Component {
 
   }
 
+  EditPopUp(i) {
+    let albumData = this.state.albums[i];
+    return (
+      <Popup position="left center" trigger={<td><button className='btn btn-warning' id="delete-button">edit</button></td>}>
+        <div style={{ "backgroundColor": "rgba(125, 125, 125, 0.95)", "width": "50vw", "color": "snow" }}>
+          <h1>Edit</h1>
+          <form className="form-control" id='edit-form' method='dialog' style={{ "backgroundColor": "rgba(255, 255, 255, 0.5)" }} onSubmit={(e) => this.updateAlbum(e)}>
+            <label htmlFor="position" className='form-inline'>Position:</label>
+            {/*<input type="number" name="position" min="1" max="500" defaultValue={albumData.number} className="form-control"  required />*/}
+            <input type="number" name="position" min="1" defaultValue={albumData.number} className="form-control" required />
+
+            <label htmlFor="title">Title:</label>
+            <input type="text" name="title" placeholder="title" defaultValue={albumData.title} className="form-control" required />
+
+            <label htmlFor="year">Year:</label>
+            <input type="number" name="year" min="1900" max="2022" defaultValue={albumData.year} className="form-control" required />
+
+            <label htmlFor="artist">Artist:</label>
+            <input type="text" name="artist" placeholder="artist" defaultValue={albumData.artist} className="form-control" required />
+            <br />
+
+            <input name='inputAlbumId' defaultValue={albumData._id} hidden={true} />
+            <input name='i' defaultValue={i} hidden={true} />
+
+            <button type="submit" className="btn btn-primary" id="append" >
+              update album
+            </button>
+          </form>
+        </div>
+      </Popup>
+    );
+  }
+
   updateAlbum(e) {
-    const id = e.target.value;
-    console.log(id);
-    
+    e.preventDefault();
+    console.log(e.target);
+    const elements = e.target.elements;
+
+    const albumJSON = {
+      _id: elements.inputAlbumId.value,
+      number: parseInt(elements.position.value),
+      artist: elements.artist.value,
+      title: elements.title.value,
+      year: parseInt(elements.year.value)
+    };
+
+    fetch(this.state.apiUri + '/' + elements.inputAlbumId.value, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(albumJSON)
+    })
+      .then(res => res.json())
+      .then(json => console.log(json))
+      .catch(err => console.log(err));
+
+    this.fetchFromApi();
+
+    this.setState({
+      albums: [...this.state.albums]
+    });
+    this.forceUpdate();
   }
 
   /**
@@ -132,6 +204,8 @@ export class App extends React.Component {
    * @returns list of albums
    */
   render() {
+    this.updateDecades();
+    console.log(this.state.decades);
     return (
       <div className="row">
         <div className="table-container col-sm">
@@ -143,6 +217,7 @@ export class App extends React.Component {
                   <th>Title</th>
                   <th>Year</th>
                   <th>Artist</th>
+                  <th> </th>
                   <th> </th>
                 </tr>
               </thead>
@@ -160,16 +235,16 @@ export class App extends React.Component {
             <h4>Add new album:</h4>
             <label htmlFor="position">Position:</label>
             {/*<input type="number" name="position" min="1" max="500" defaultValue="1" className="form-control" ref={(value) => {this.number = value;}}/>*/}
-            <input type="number" name="position" defaultValue="501" className="form-control" ref={(value) => {this.number = value;}}/>
+            <input type="number" name="position" defaultValue="501" className="form-control" ref={(value) => { this.number = value; }} />
 
             <label htmlFor="title">Title:</label>
-            <input type="text" name="title" placeholder="title" className="form-control" required ref={(value) => {this.title = value;}}/>
+            <input type="text" name="title" placeholder="title" className="form-control" required ref={(value) => { this.title = value; }} />
 
             <label htmlFor="year">Year:</label>
-            <input type="number" name="year" min="1900" max="2022" defaultValue="2021" className="form-control" required ref={(value) => {this.year = value;}}/>
+            <input type="number" name="year" min="1900" max="2022" defaultValue="2021" className="form-control" required ref={(value) => { this.year = value; }} />
 
             <label htmlFor="artist">Artist:</label>
-            <input type="text" name="artist" placeholder="artist" className="form-control" required ref={(value) => {this.artist = value;}}/>
+            <input type="text" name="artist" placeholder="artist" className="form-control" required ref={(value) => { this.artist = value; }} />
             <br />
 
             <button type="submit" className="btn btn-primary" id="append">
@@ -200,29 +275,22 @@ function AlbumRows(app, albums) {
 
   for (let i = 0; i < albums.length; i++) {
     const albumData = albums[i];
+
     tds.push(
-      <tr className="album-row" id="album-row" draggable="true" key={albumData._id}  onChange={(e) => app.updateAlbum(e)}>
+      <tr className="album-row" id="album-row" draggable="true" key={albumData._id}  >
         <td className='number' id='number'>{albumData.number}</td>
         <td className='title'>{albumData.title}</td>
         <td className='year'>{albumData.year}</td>
         <td className='artist'>{albumData.artist}</td>
-        <td><button className='btn btn-danger' id="delete-button" value={[i, albumData._id]} onClick={(e)=> app.deleteAlbum(e)}>delete</button></td>
-        {EditPopUp(i, albumData, app)}
+        <td><button className='btn btn-danger' id="delete-button" value={[i, albumData._id]} onClick={(e) => app.deleteAlbum(e)}>delete</button></td>
+        {app.EditPopUp(i)}
       </tr>
     );
   }
   return tds;
 }
 
-function EditPopUp(i, albumData, app) {
-  return (
-    <Popup position="left center" trigger={<td><button className='btn btn-warning' id="delete-button" value={[i, albumData._id, albumData.number, albumData.title, albumData.year, albumData.artist]} onClick={(e)=> app.updateAlbum(e)}>edit</button></td>}>
-      <div style={{"backgroundColor": "(255, 255, 255)", "padding": "10%", "width": "100vh"}}>
-        <h1>FUNCIONOU</h1>
-      </div>
-    </Popup>
-  );
-}
+
 
 /**
  * Checks for validity of inputs from user.

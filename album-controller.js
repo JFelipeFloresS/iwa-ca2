@@ -57,7 +57,7 @@ exports.getAlbum = function(req, res) {
 exports.updateAlbum = function(req, res) {
     console.log('UPDATE /albums/' + req.params.id);
     console.log(req.body);
-    Album.findOneAndUpdate({id: new mongoose.Types.ObjectId(req.params.id)}, req.body, {new: true},function (err, album) {
+    Album.findOneAndUpdate({_id: new mongoose.Types.ObjectId(req.params.id)}, req.body, {new: true},function (err, album) {
       if (err) {
         res.status(400).json(err);
       } 

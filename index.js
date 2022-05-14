@@ -29,12 +29,6 @@ mongoose.connection.on('connected', () => {
     console.log('MongoDB successfully connected.');
 });
 
-/*
-app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname, './albums/public/index.html'));
-});
-*/
-
 server.listen(
     process.env.PORT || 8000,
     process.env.IP || "0.0.0.0",
