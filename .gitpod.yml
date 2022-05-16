@@ -2,5 +2,5 @@ tasks:
   - name: Full stack initialisation working!!!
     init: |
       npm install
-      npm client-install
+      npm run client-install
     command: npm run dev
