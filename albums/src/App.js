@@ -14,7 +14,7 @@ export class App extends React.Component {
       currentDecade: 'All time',
       dragItem: null,
       isLoaded: false,
-      apiUri: 'https://8000-jfelipefloress-iwaca2-xoyy9vh8plh.ws-eu45.gitpod.io/albums'
+      apiUri: '/albums/'
     };
 
   }
