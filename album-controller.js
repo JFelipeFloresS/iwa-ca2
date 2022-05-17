@@ -1,7 +1,7 @@
 const Album = require('./models/album'),
     mongoose = require('mongoose');
 
-
+// Sends a welcome message as response
 exports.help = function (req, res) {
     console.log('GET /');
     res.json({
@@ -9,14 +9,18 @@ exports.help = function (req, res) {
     });
 }
 
+// Iterates through the JSON to update many albums
 exports.updateMultipleAlbums = function (req, res) {
     console.log('PUT /albums');
 
     let albums = req.body;
     let errors = [];
 
+    // req.body is a JSON with album id's as key and the value of the albums as body
     Object.keys(albums).forEach((id) => {
         const album = albums[id];
+        
+        // upsert true to insert or update album
         Album.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(id) }, {number: album.number, year: album.year, artist: album.artist, title: album.title}, { upsert: true }, function (err, album) {
             if (err) {
                 console.log(err);
@@ -29,10 +33,12 @@ exports.updateMultipleAlbums = function (req, res) {
     else res.json(albums);
 };
 
+// Saves new album to DB
 exports.addAlbum = function (req, res) {
     console.log('POST /albums');
     console.log('body' + req.body);
 
+    // create album based on mongoose model
     let newAlbum = new Album(req.body);
     console.log("Album", newAlbum);
 
@@ -44,6 +50,7 @@ exports.addAlbum = function (req, res) {
     });
 };
 
+// Returns all documents in the albums
 exports.getAlbums = function (req, res) {
     console.log('GET /albums');
     console.log(req.body);
@@ -55,6 +62,7 @@ exports.getAlbums = function (req, res) {
     });
 };
 
+// Returns a single document based on id
 exports.getAlbum = function (req, res) {
     console.log('GET /albums/' + req.params.number);
     console.log(req.body);
@@ -67,6 +75,7 @@ exports.getAlbum = function (req, res) {
     );
 };
 
+// Updates an album
 exports.updateAlbum = function (req, res) {
     console.log('UPDATE /albums/' + req.params.id);
     console.log(req.body);
@@ -78,6 +87,7 @@ exports.updateAlbum = function (req, res) {
     });
 }
 
+// Deletes an album
 exports.deleteAlbum = function (req, res) {
     console.log('DELETE /albums/' + req.params.id)
     Album.findOneAndRemove({ _id: new mongoose.Types.ObjectId(req.params.id) }, function (err, album) {
