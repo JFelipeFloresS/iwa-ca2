@@ -221,9 +221,9 @@ export class App extends React.Component {
     let albumData = this.state.albums[i];
     return (
       <Popup position="left center" trigger={<td><button className='btn btn-warning' id="delete-button">edit</button></td>}>
-        <div style={{ "backgroundColor": "rgba(125, 125, 125, 0.95)", "width": "50vw", "color": "snow" }}>
+        <div id="edit-popup" style={{ "backgroundColor": "rgba(125, 125, 125, 0.95)", "width": "50vw", "color": "snow" }}>
           <h1>Edit</h1>
-          <form className="form-control" id='edit-form' method='dialog' style={{ "backgroundColor": "rgba(255, 255, 255, 0.5)" }} onSubmit={(e) => this.updateAlbum(e)}>
+          <form className="form-control" id='edit-form' method='dialog' style={{ "backgroundColor": "rgba(255, 255, 255, 0.5)" }} onSubmit={(e) => {this.updateAlbum(e); document.getElementById('edit-popup').innerHTML = ""}}>
             <label htmlFor="position" className='form-inline'>Position:</label>
             {/*<input type="number" name="position" min="1" max="500" defaultValue={albumData.number} className="form-control"  required />*/}
             <input type="number" name="position" min="1" defaultValue={albumData.number} className="form-control" required />
@@ -251,7 +251,7 @@ export class App extends React.Component {
     );
   }
 
-  async updateAlbum(e) {
+  updateAlbum(e) {
     e.preventDefault();
     console.log(e.target);
     const elements = e.target.elements;
@@ -268,12 +268,10 @@ export class App extends React.Component {
     let i = elements.i.value;
     let updatedAlbums = [...this.state.albums];
     updatedAlbums[i] = albumJSON;
-    this.setState({
-      albums: updatedAlbums
-    })
+    
     this.editAlbumContent(albumJSON);
     if (elements.previousNumber.value !== elements.position.value) {
-      this.updateAlbumsPosition(elements.position.value, elements.inputAlbumId.value)
+      this.updateAlbumsPosition(elements.position.value, elements.inputAlbumId.value, updatedAlbums)
     }
   }
 
@@ -294,8 +292,8 @@ export class App extends React.Component {
 
   }
 
-  updateAlbumsPosition(pos, id) {
-    var sortedAlbums = this.state.albums;
+  updateAlbumsPosition(pos, id, updateAlbums) {
+    var sortedAlbums = updatedAlbums;
     sortedAlbums.sort((a, b) => a.number - b.number);
 
     var currPos = pos;
