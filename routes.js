@@ -8,6 +8,6 @@ router.get('/albums/:number', albumCtrl.getAlbum);
 router.put('/albums/:id', albumCtrl.updateAlbum);
 router.put('/albums', albumCtrl.updateMultipleAlbums);
 router.delete('/albums/:id', albumCtrl.deleteAlbum);
-router.get('/', albumCtrl.help);
+router.get('/help', albumCtrl.help);
 
 module.exports = router;
