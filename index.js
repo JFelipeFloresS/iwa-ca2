@@ -1,3 +1,7 @@
+/*
+*   Express app base and mongoose connection retrieved from 
+*   https://github.com/mikhail-cct/iwa_labs
+*/
 const express = require("express"),
     bodyParser = require("body-parser"),
     http = require("http"),
@@ -28,6 +32,7 @@ mongoose.connection.on('connected', () => {
     console.log('MongoDB successfully connected.');
 });
 
+// static path and express response to serve React app retrieved from https://github.com/mujibsardar/fcb_react_express_heroku_example
 // Serve any static files
 app.use(express.static(path.join(__dirname, 'albums/build')));
 // Handle React routing, return all requests to React app
