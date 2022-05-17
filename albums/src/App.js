@@ -272,6 +272,10 @@ export class App extends React.Component {
     this.editAlbumContent(albumJSON);
     if (elements.previousNumber.value != elements.position.value) {
       this.updateAlbumsPosition(elements.position.value, elements.inputAlbumId.value, updatedAlbums)
+    } else {
+      this.setState({
+        albums: updatedAlbums
+      })
     }
   }
 
