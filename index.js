@@ -36,8 +36,7 @@ app.get('*', function(req, res) {
 });
 
 server.listen(
-    //process.env.PORT || 8000,
-    8000,
+    process.env.PORT || 8000,
     process.env.IP || "0.0.0.0",
     function () {
         const addr = server.address();
