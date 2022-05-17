@@ -37,7 +37,7 @@ export class App extends React.Component {
 
     for (let i = 0; i < sortedAlbums.length; i++) {
       const currAlbum = sortedAlbums[i];
-      if (currPos === currAlbum.number) {
+      if (currPos == currAlbum.number) {
         console.log("currPos", currPos);
         console.log("curr album number", currAlbum.number);
         currAlbum.number++;
@@ -162,7 +162,7 @@ export class App extends React.Component {
     var index = -1;
     for (let i = 0; i < sortedAlbums.length; i++) {
       const newStateAlbum = sortedAlbums[i];
-      if (newStateAlbum._id === id) {
+      if (newStateAlbum._id == id) {
         index = i;
       }
     }
@@ -270,7 +270,7 @@ export class App extends React.Component {
     updatedAlbums[i] = albumJSON;
     
     this.editAlbumContent(albumJSON);
-    if (elements.previousNumber.value !== elements.position.value) {
+    if (elements.previousNumber.value != elements.position.value) {
       this.updateAlbumsPosition(elements.position.value, elements.inputAlbumId.value, updatedAlbums)
     }
   }
@@ -300,8 +300,8 @@ export class App extends React.Component {
 
     for (let i = 0; i < sortedAlbums.length; i++) {
       const currAlbum = sortedAlbums[i];
-      if (id === currAlbum._id) continue;
-      if (currPos === currAlbum.number) {
+      if (id == currAlbum._id) continue;
+      if (currPos == currAlbum.number) {
         currAlbum.number++;
         currPos++;
       };
