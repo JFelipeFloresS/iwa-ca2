@@ -12,7 +12,6 @@ export class App extends React.Component {
       albums: [],
       decades: ['All time', '20s', '10s', '00s', '90s', '80s', '70s', '60s', '50s', '40s'],
       currentDecade: 'All time',
-      dragItem: null,
       isLoaded: false,
       apiUri: '/albums/'
     };
@@ -27,7 +26,7 @@ export class App extends React.Component {
   }
 
   addAlbumToState(album) {
-    if (this.state.albums.length < album.number) album['number'] = this.state.albums.length;
+    if (this.state.albums.length < album.number) album['number'] = this.state.albums.length + 1;
 
     const position = album.number;
     var sortedAlbums = this.state.albums;
@@ -39,6 +38,8 @@ export class App extends React.Component {
     for (let i = 0; i < sortedAlbums.length; i++) {
       const currAlbum = sortedAlbums[i];
       if (currPos === currAlbum.number) {
+        console.log("currPos", currPos);
+        console.log("curr album number", currAlbum.number);
         currAlbum.number++;
         currPos++;
       };
@@ -112,12 +113,6 @@ export class App extends React.Component {
     });
   }
 
-  setDragItem(item) {
-    this.setState({
-      dragItem: item,
-    });
-  }
-
   /**
    * Add album to DB and react list
    * @param {ClickEvent} e mouse click
@@ -162,14 +157,6 @@ export class App extends React.Component {
   }
 
   deleteFromDBAndList(id, pos) {
-
-
-    fetch(this.state.apiUri + '/' + id, {
-      method: 'DELETE'
-    })
-      .then(res => res.json())
-      .then(json => console.log(json))
-      .catch(err => console.log("Error: ", err));
 
     var sortedAlbums = [...this.state.albums];
     var index = -1;
@@ -219,8 +206,15 @@ export class App extends React.Component {
       body: albumsJSON
     })
       .then(response => response.json())
-      .then(json => console.log(json))
+      .then(json => console.log("updated", json))
       .catch(error => console.log("Error: ", error));
+
+    fetch(this.state.apiUri + '/' + id, {
+      method: 'DELETE'
+    })
+      .then(res => res.json())
+      .then(json => console.log("deleted", json))
+      .catch(err => console.log("Error: ", err));
   }
 
   EditPopUp(i) {
@@ -246,6 +240,7 @@ export class App extends React.Component {
 
             <input name='inputAlbumId' defaultValue={albumData._id} hidden={true} />
             <input name='i' defaultValue={i} hidden={true} />
+            <input name='previousNumber' defaultValue={albumData.number} hidden={true} />
 
             <button type="submit" className="btn btn-primary" id="append" >
               update album
@@ -256,12 +251,12 @@ export class App extends React.Component {
     );
   }
 
-  updateAlbum(e) {
+  async updateAlbum(e) {
     e.preventDefault();
     console.log(e.target);
     const elements = e.target.elements;
 
-    const id = new mongoose.Types.ObjectId();
+    const id = new mongoose.Types.ObjectId(elements.inputAlbumId.value);
     const albumJSON = {
       _id: id,
       number: parseInt(elements.position.value),
@@ -270,8 +265,81 @@ export class App extends React.Component {
       year: parseInt(elements.year.value)
     };
 
-    this.deleteFromDBAndList(elements.inputAlbumId.value, elements.i.value);
-    this.addAlbumToState(albumJSON);
+    let i = elements.i.value;
+    let updatedAlbums = [...this.state.albums];
+    updatedAlbums[i] = albumJSON;
+    this.setState({
+      albums: updatedAlbums
+    })
+    this.editAlbumContent(albumJSON);
+    if (elements.previousNumber.value !== elements.position.value) {
+      this.updateAlbumsPosition(elements.position.value, elements.inputAlbumId.value)
+    } 
+  }
+
+  editAlbumContent(album) {
+    
+    var albumJSON = JSON.stringify(album);
+
+    fetch(this.state.apiUri + "/" + album._id, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: albumJSON
+    })
+      .then(response => response.json())
+      .then(json => console.log("updated",json))
+      .catch(error => console.log("Error: ", error));
+
+  }
+
+  updateAlbumsPosition(pos, id) {
+    var sortedAlbums = this.state.albums;
+    sortedAlbums.sort((a, b) => a.number - b.number);
+
+    var currPos = pos;
+
+    for (let i = 0; i < sortedAlbums.length; i++) {
+      const currAlbum = sortedAlbums[i];
+      if (id === currAlbum._id) continue;
+      if (currPos === currAlbum.number) {
+        currAlbum.number++;
+        currPos++;
+      };
+    }
+
+    this.setState({
+      albums: sortedAlbums
+    })
+
+    var albums = {};
+
+    for (let i = 0; i < this.state.albums.length; i++) {
+      const json = this.state.albums[i];
+      albums[json._id] = {
+        number: json.number,
+        year: json.year,
+        title: json.title,
+        artist: json.artist
+      };
+    }
+
+    var albumsJSON = JSON.stringify(albums);
+    console.log(albumsJSON);
+
+    // update albums
+    fetch(this.state.apiUri, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: albumsJSON
+    })
+      .then(response => response.json())
+      .then(json => console.log(json))
+      .catch(error => console.log("Error: ", error));
+
   }
 
   /**
@@ -381,50 +449,3 @@ function AlbumRows(app, albums, currentDecade) {
 function getDecade(year) {
   return year.toString().substring(2, 3) + '0s';
 }
-
-/**
- * Checks for validity of inputs from user.
- *
- * @param {NodeList} inputs append-form inputs
-        * @returns true if valid, false if not
-        */
-function isValidFormInputs(inputs) {
-  try {
-    inputs.forEach(input => {
-      input.value = input.value.trim();
-
-      // Checks if inputs are not empty
-      if (input.value === '') {
-        /*badNotification({
-            title: 'Error',
-            message: 'Please fill in all fields!'
-        });*/
-        return false;
-      }
-
-      // Checks if position is valid (between 1 and 500)
-      if (input.getAttribute('name') === 'position' && (input.value < 1 || input.value > 500)) {
-        /*badNotification({
-            title: 'Error',
-            message: 'Only positions from 1 to 500 allowed!'
-        });*/
-        return false;
-      }
-
-      // Checks if year is valid (between 1900 and 2022)
-      if (input.getAttribute('name') === 'year' && (input.value < 1900 || input.value > 2022)) {
-        /*badNotification({
-            title: 'Error',
-            message: 'Only albums from 1900 to 2022 allowed!'
-        });*/
-        return false;
-      }
-    });
-
-    return true;
-
-  } catch (e) { // try catch created to break from forEach loop
-    return false;
-  }
-}
-
