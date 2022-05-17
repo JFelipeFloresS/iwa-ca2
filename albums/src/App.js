@@ -292,7 +292,7 @@ export class App extends React.Component {
 
   }
 
-  updateAlbumsPosition(pos, id, updateAlbums) {
+  updateAlbumsPosition(pos, id, updatedAlbums) {
     var sortedAlbums = updatedAlbums;
     sortedAlbums.sort((a, b) => a.number - b.number);
 
