@@ -183,7 +183,7 @@ export class App extends React.Component {
 
     var sortedAlbums = [...this.state.albums];
     
-    if (index !== -1) sortedAlbums.splice(pos, 1); // remove album from array retrieved from https://www.w3docs.com/snippets/javascript/how-to-remove-an-element-from-an-array-in-javascript.html
+    if (pos !== -1) sortedAlbums.splice(pos, 1); // remove album from array retrieved from https://www.w3docs.com/snippets/javascript/how-to-remove-an-element-from-an-array-in-javascript.html
 
     let currPos = parseInt(pos) + 1;
 
