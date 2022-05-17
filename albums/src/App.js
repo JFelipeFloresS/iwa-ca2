@@ -6,8 +6,13 @@ import Popup from 'reactjs-popup';
 
 export class App extends React.Component {
 
+  /**
+  * Defines state of app
+  */
   constructor(props) {
     super(props);
+    
+    // declaration of state retrieved from https://stackoverflow.com/questions/60961065/unable-to-use-usestate-in-class-component-react-js
     this.state = {
       albums: [],
       decades: ['All time', '20s', '10s', '00s', '90s', '80s', '70s', '60s', '50s', '40s'],
@@ -25,21 +30,26 @@ export class App extends React.Component {
     this.fetchFromApi();
   }
 
+  /**
+   * Add album to state and update the albums state array
+   * @param {JSON} album album to be added
+  */
   addAlbumToState(album) {
-    if (this.state.albums.length < album.number) album['number'] = this.state.albums.length + 1;
+    if (this.state.albums.length < album.number) album['number'] = this.state.albums.length + 1; // adjust album position if added after the end of list
 
     const position = album.number;
     var sortedAlbums = this.state.albums;
 
     let currPos = position;
 
-    sortedAlbums.sort((a, b) => a.number - b.number);
+    sortedAlbums.sort((a, b) => a.number - b.number); // retrieved from https://stackoverflow.com/questions/979256/sorting-an-array-of-objects-by-property-values
 
-    for (let i = 0; i < sortedAlbums.length; i++) {
+    /**
+    * Iterate through albums array sorted by position and adjust their position accordingly
+    */
+    for (let i = 0; i < sortedAlbums.length; i++) { 
       const currAlbum = sortedAlbums[i];
       if (currPos == currAlbum.number) {
-        console.log("currPos", currPos);
-        console.log("curr album number", currAlbum.number);
         currAlbum.number++;
         currPos++;
       };
@@ -47,12 +57,16 @@ export class App extends React.Component {
 
     sortedAlbums.push(album);
 
+    // retrieved from https://www.geeksforgeeks.org/how-to-update-the-state-of-a-component-in-reactjs/
     this.setState({
       albums: sortedAlbums
     })
 
     var albums = {};
 
+    /**
+    * Create JSON with id as key and the values as body to send to API
+    */
     for (let i = 0; i < this.state.albums.length; i++) {
       const json = this.state.albums[i];
       albums[json._id] = {
@@ -80,6 +94,11 @@ export class App extends React.Component {
 
   }
 
+  /**
+   *  Update option selected on decades select tag
+   *  based on https://stackoverflow.com/questions/68790381/how-to-use-onchange-in-react-select
+   *  @param {ClickEvent} e select tag changed
+  */
   updateSelectedDecade(e) {
     e.preventDefault();
     this.setState({
@@ -88,7 +107,7 @@ export class App extends React.Component {
   }
 
   /**
-   * Fetch albums from API
+   * Get albums from API
    */
   fetchFromApi() {
     fetch(this.state.apiUri)
@@ -107,6 +126,10 @@ export class App extends React.Component {
       });
   }
 
+  /**
+  * Change state of albums
+  * @param {JSON} newAlbums albums to be set as albums state
+  */
   setAlbums(newAlbums) {
     this.setState({
       albums: newAlbums
@@ -114,17 +137,12 @@ export class App extends React.Component {
   }
 
   /**
-   * Add album to DB and react list
+   * Add album to DB and react state array
    * @param {ClickEvent} e mouse click
    */
   addAlbum(e) {
 
     e.preventDefault();
-
-    /*if (!isValidFormInputs(e)) {
-      console.log('Invalid input');
-      return;
-    }*/
 
     const id = new mongoose.Types.ObjectId();
     let newAlbum = {
@@ -143,12 +161,12 @@ export class App extends React.Component {
   }
 
   /**
-   * Delete album from DB and react list
+   * Define position and id of album to be deleted and call deleteFromDBAndList
    * @param {clickEvent} e mouse click
    */
   deleteAlbum(e) {
     e.preventDefault();
-    const splitString = e.target.value.split(',');
+    const splitString = e.target.value.split(','); // get both position and id from the same element
     const pos = splitString[0];
     const id = splitString[1];
 
@@ -156,22 +174,24 @@ export class App extends React.Component {
 
   }
 
+  /**
+  * Delete an album from DB and albums state array
+  * @param {int} id id on DB
+  * @param {int} pos index in albums state array
+  */
   deleteFromDBAndList(id, pos) {
 
     var sortedAlbums = [...this.state.albums];
-    var index = -1;
-    for (let i = 0; i < sortedAlbums.length; i++) {
-      const newStateAlbum = sortedAlbums[i];
-      if (newStateAlbum._id == id) {
-        index = i;
-      }
-    }
-    if (index !== -1) sortedAlbums.splice(index, 1);
+    
+    if (index !== -1) sortedAlbums.splice(pos, 1); // remove album from array retrieved from https://www.w3docs.com/snippets/javascript/how-to-remove-an-element-from-an-array-in-javascript.html
 
     let currPos = parseInt(pos) + 1;
 
     sortedAlbums.sort((a, b) => a.number - b.number);
 
+    /**
+    * adjust position of remaining albums after removal 
+    */
     for (let i = 0; i < sortedAlbums.length; i++) {
       const currAlbum = sortedAlbums[i];
       if (currPos > parseInt(pos) && currPos < parseInt(currAlbum.number)) {
@@ -184,6 +204,9 @@ export class App extends React.Component {
 
     var albums = {};
 
+    /**
+    * Create dictionary with id as key and body as value
+    */
     for (let i = 0; i < this.state.albums.length; i++) {
       const json = this.state.albums[i];
       albums[json._id] = {
@@ -195,7 +218,20 @@ export class App extends React.Component {
     }
 
     var albumsJSON = JSON.stringify(albums);
+    
+    /**
+    * delete album
+    */
+    fetch(this.state.apiUri + id, {
+      method: 'DELETE'
+    })
+      .then(res => res.json())
+      .then(json => console.log("deleted", json))
+      .catch(err => console.log("Error: ", err));
 
+    /**
+    * update all albums
+    */
     fetch(this.state.apiUri, {
       method: 'PUT',
       headers: {
@@ -207,20 +243,22 @@ export class App extends React.Component {
       .then(json => console.log("updated", json))
       .catch(error => console.log("Error: ", error));
 
-    fetch(this.state.apiUri + id, {
-      method: 'DELETE'
-    })
-      .then(res => res.json())
-      .then(json => console.log("deleted", json))
-      .catch(err => console.log("Error: ", err));
-
     this.setState({
       albums: sortedAlbums
     })
   }
 
+  /**
+  * Open popup to edit album
+  * @param {int} i index of album to be edited
+  */
   EditPopUp(i) {
     let albumData = this.state.albums[i];
+    
+    /**
+    * Form to update an album within a div
+    * onSubmit calls updateAlbum and clears the innerHTML of the div
+    */
     return (
       <Popup position="left center" trigger={<td><button className='btn btn-warning' id="delete-button">edit</button></td>}>
         <div id="edit-popup" style={{ "backgroundColor": "rgba(125, 125, 125, 0.95)", "width": "50vw", "color": "snow" }}>
@@ -253,12 +291,15 @@ export class App extends React.Component {
     );
   }
 
+  /**
+  * Updates an album using an EditPopUp data
+  * @param {ClickEvent} e mouse click
+  */
   updateAlbum(e) {
     e.preventDefault();
-    console.log(e.target);
     const elements = e.target.elements;
 
-    const id = new mongoose.Types.ObjectId(elements.inputAlbumId.value);
+    const id = new mongoose.Types.ObjectId(elements.inputAlbumId.value); // create id with mongoose ObjectId to be stored in the DB
     const albumJSON = {
       _id: id,
       number: parseInt(elements.position.value),
@@ -269,9 +310,13 @@ export class App extends React.Component {
 
     let i = elements.i.value;
     let updatedAlbums = [...this.state.albums];
-    updatedAlbums[i] = albumJSON;
+    updatedAlbums[i] = albumJSON; // changes element in local variable
 
     this.editAlbumContent(albumJSON);
+    
+    /**
+    * update position of rest of albums if changing the position of the album
+    */
     if (elements.previousNumber.value != elements.position.value) {
       this.updateAlbumsPosition(elements.position.value, elements.inputAlbumId.value, updatedAlbums)
     } else {
@@ -281,6 +326,10 @@ export class App extends React.Component {
     }
   }
 
+  /**
+  * Updates an album in the DB
+  * @param {JSON} album new content of album
+  */
   editAlbumContent(album) {
 
     var albumJSON = JSON.stringify(album);
@@ -298,12 +347,21 @@ export class App extends React.Component {
 
   }
 
+  /**
+  * Update albums positions after one album being edited 
+  * @param {int} pos position of edited album in the charts
+  * @param {int} id id of album that was edited
+  * @param {JSON} updatedAlbums albums state array based JSON with the edited album updated
+  */
   updateAlbumsPosition(pos, id, updatedAlbums) {
     var sortedAlbums = updatedAlbums;
     sortedAlbums.sort((a, b) => a.number - b.number);
 
     var currPos = pos;
 
+    /**
+    * Fix albums positions in the array
+    */
     for (let i = 0; i < sortedAlbums.length; i++) {
       const currAlbum = sortedAlbums[i];
       if (id == currAlbum._id) continue;
@@ -313,12 +371,11 @@ export class App extends React.Component {
       };
     }
 
-    this.setState({
-      albums: sortedAlbums
-    })
-
     var albums = {};
 
+    /**
+    * create JSON with id as key and body as value
+    */
     for (let i = 0; i < this.state.albums.length; i++) {
       const json = this.state.albums[i];
       albums[json._id] = {
@@ -344,11 +401,14 @@ export class App extends React.Component {
       .then(json => console.log(json))
       .catch(error => console.log("Error: ", error));
 
+      this.setState({
+        albums: sortedAlbums
+      })
   }
 
   /**
-   * Render class App
-   * @returns list of albums
+   * Render object App
+   * @returns decade selector, albums table with AlbumsRows function as tbody and add album form
    */
   render() {
     return (
@@ -425,11 +485,11 @@ export class App extends React.Component {
 /**
  * Draw trs of albums
  * @param {JSON} albums JSON list of albums
-        * @returns table rows of albums
-        */
+ * @returns table rows of albums
+ */
 function AlbumRows(app, albums, currentDecade) {
 
-  if (Object.keys(albums).length === 0) return;
+  if (Object.keys(albums).length === 0) return(<h2>No albums in the list. Add one and start your list!</h2>);
 
   albums = albums.sort((a, b) => a.number - b.number);
 
@@ -439,8 +499,11 @@ function AlbumRows(app, albums, currentDecade) {
 
   for (let i = 0; i < albums.length; i++) {
     const albumData = albums[i];
-    if (currentDecade !== 'All time' && getDecade(albumData.year) !== currentDecade) continue;
+    if (currentDecade !== 'All time' && getDecade(albumData.year) !== currentDecade) continue; // skips albums that don't belong in the currentDecade
     albumsShown++;
+    /**
+    * append a tr with album information, a delete button and an edit button that opens an EditPopUp
+    */
     tds.push(
       <tr className="album-row" id="album-row" draggable="true" key={albumData._id}  >
         <td className='number' id='number'>{albumData.number}</td>
@@ -457,6 +520,10 @@ function AlbumRows(app, albums, currentDecade) {
   return tds;
 }
 
+/**
+* Transform any given year with four digits into a decade
+* @param {int} year year to get decade from
+*/
 function getDecade(year) {
   return year.toString().substring(2, 3) + '0s';
 }
