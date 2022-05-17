@@ -2,7 +2,7 @@
   "scripts": {
     "client-install": "cd albums && npm install",
     "heroku-postbuild": "cd albums && npm install && npm install --only=dev --no-shrinkwrap && npm run build",
-    "start": "concurrently \"npm run test\" \"npm run client\"",
+    "start": "node index.js",
     "test": "nodemon index.js",
     "client": "npm start --prefix albums",
     "dev": "concurrently \"npm run test\" \"npm run client\""
