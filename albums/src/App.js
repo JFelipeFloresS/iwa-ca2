@@ -209,7 +209,7 @@ export class App extends React.Component {
       .then(json => console.log("updated", json))
       .catch(error => console.log("Error: ", error));
 
-    fetch(this.state.apiUri + '/' + id, {
+    fetch(this.state.apiUri + id, {
       method: 'DELETE'
     })
       .then(res => res.json())
@@ -281,7 +281,7 @@ export class App extends React.Component {
     
     var albumJSON = JSON.stringify(album);
 
-    fetch(this.state.apiUri + "/" + album._id, {
+    fetch(this.state.apiUri + album._id, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
