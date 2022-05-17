@@ -274,11 +274,11 @@ export class App extends React.Component {
     this.editAlbumContent(albumJSON);
     if (elements.previousNumber.value !== elements.position.value) {
       this.updateAlbumsPosition(elements.position.value, elements.inputAlbumId.value)
-    } 
+    }
   }
 
   editAlbumContent(album) {
-    
+
     var albumJSON = JSON.stringify(album);
 
     fetch(this.state.apiUri + album._id, {
@@ -289,7 +289,7 @@ export class App extends React.Component {
       body: albumJSON
     })
       .then(response => response.json())
-      .then(json => console.log("updated",json))
+      .then(json => console.log("updated", json))
       .catch(error => console.log("Error: ", error));
 
   }
@@ -349,14 +349,20 @@ export class App extends React.Component {
   render() {
     return (
       <div>
-        <div className='select-div'>
-          <label htmlFor="select-year">Show year:</label>
-          <select className="select-year form-select"
-            name='select-year' style={{ 'minWidth': '100%' }} onChange={e => this.updateSelectedDecade(e)}>
-            {this.state.decades.map(decade => {
-              return <option key={decade} value={decade}>{decade}</option>;
-            })}
-          </select>
+        <div className='row'>
+
+          <div className='select-div col-sm'>
+            <label htmlFor="select-year">Show year:</label>
+            <select className="select-year form-select"
+              name='select-year' style={{ 'minWidth': '100%' }} onChange={e => this.updateSelectedDecade(e)}>
+              {this.state.decades.map(decade => {
+                return <option key={decade} value={decade}>{decade}</option>;
+              })}
+            </select>
+          </div>
+          
+          <div className='col-sm-2' id='number-albums-shown'></div>
+
         </div>
         <hr />
         <div className="row">
@@ -442,6 +448,7 @@ function AlbumRows(app, albums, currentDecade) {
       </tr>
     );
   }
+  document.getElementById('number-albums-shown').innerHTML = albumsShown + " albums in " + currentDecade;
   if (albumsShown === 0) return <h2>No albums found for {currentDecade}. Add one or try a different decade!</h2>;
   return tds;
 }
