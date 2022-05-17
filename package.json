@@ -1,7 +1,7 @@
 {
   "scripts": {
     "client-install": "cd albums && npm install",
-    "start": "node index.js",
+    "start": "npm run client-install && npm run dev",
     "test": "nodemon index.js",
     "client": "npm start --prefix albums",
     "dev": "concurrently \"npm run test\" \"npm run client\""
